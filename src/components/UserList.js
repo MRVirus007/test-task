@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { db } from '../backend/firebase';
+import { Link } from "react-router-dom";
+import { getUsersList } from "../backend/api";
 import $ from "jquery";
 import "datatables.net";
-import { getUsersList } from "../backend/api";
-import { collection, getDocs } from "firebase/firestore";
 import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 //For buttons like print
 import "datatables.net-buttons/js/dataTables.buttons.min.js";
@@ -15,22 +14,15 @@ import "datatables.net-searchpanes/js/dataTables.searchPanes.min.js";
 import "datatables.net-searchpanes-bs5/css/searchPanes.bootstrap5.min.css";
 import "datatables.net-select-bs5/css/select.bootstrap5.min.css";
 import "datatables.net-select/js/dataTables.select.min.js";
-
+//responsive
+import "datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css";
 
 export const UserList = () => {
     const [users, setUsers] = useState([]);
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const data = await getDocs(collection(db, "users"));
-                const users = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
-                setUsers(users);
-                console.log("users:: ", users);
-            } catch (error) {
-                console.error('Error fetching data: ', error);
-            }
-        };
-        fetchData();
+        getUsersList().then((userList) => {
+            setUsers(userList);
+        }).catch(err => console.log("Error: ", err));
     }, []);
 
     useEffect(() => {
@@ -45,18 +37,20 @@ export const UserList = () => {
                 { title: 'Guardian Details', data: row => `${row.guardianDetails.title} ${row.guardianDetails.name}` },
                 { title: 'Nationality', data: 'nationality' },
             ],
-            dom: 'l<"float-end"B>rtip',
+            dom: '<"d-flex justify-content-between align-items-center"lBf><"float-end mb-3">rtip',
+            "language": {
+                "paginate": {
+                    "previous": "Prev",
+                    "next": "Next"
+                }
+            },
+            "drawCallback": function () {
+                $('a.paginate_button').addClass('btn btn-sm btn-dark mx-1');
+            },
             buttons: [
                 {
-                    extend: 'pdfHtml5',
-                    text: 'Export to PDF',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
-                    },
-                },
-                {
                     extend: 'excelHtml5',
-                    text: 'Export to Excel',
+                    text: 'Excel',
                     exportOptions: {
                         columns: [0, 1, 2, 3, 4, 5, 6],
                     },
@@ -64,9 +58,7 @@ export const UserList = () => {
                 {
                     extend: 'print',
                     text: 'Print',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3, 4, 5, 6],
-                    },
+                    className: 'btn btn-light'
                 },
             ],
             searching: true,
@@ -92,8 +84,13 @@ export const UserList = () => {
 
     return (
         <div className="container">
+            <Link to="/register" className="btn btn-outline-success mt-3">
+                Add User
+            </Link>
             <h2 className="mt-3 mb-3">User List</h2>
-            <table className="table table-striped table-bordered" id="userTable" />
+            <div className="table-responsive">
+                <table className="table table-striped table-bordered dt-button" id="userTable" />
+            </div>
         </div>
     );
 }

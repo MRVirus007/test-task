@@ -1,10 +1,9 @@
 import { db } from "./firebase";
-import { collection, addDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 
 export const addUserToFirestore = async (user) => {
     try {
-        const docRef = await addDoc(collection(db, "users"), user);
-        console.log("User added to Firestore with ID: ", docRef.id);
+        await addDoc(collection(db, "users"), user);
     } catch (error) {
         console.error("Error adding user to Firestore: ", error);
     }
@@ -12,10 +11,10 @@ export const addUserToFirestore = async (user) => {
 
 export const getUsersList = async () => {
     try {
-        const snapshot = await db.collection('users').get();
-        const fetchedUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        return fetchedUsers;
+        const data = await getDocs(collection(db, "users"));
+        const users = data.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        return users;
     } catch (error) {
-        console.error("Error getting user from Firestore: ", error);
+        console.error('Error fetching users from database: ', error);
     }
 };
