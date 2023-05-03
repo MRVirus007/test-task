@@ -15,7 +15,7 @@ const schema = yup.object().shape({
     }),
     idType: yup.string(),
     govtId: yup.string().when('idType', {
-        is: 'aadhar',
+        is: 'Aadhar',
         then: () => yup.string().matches(/^\d{12}$/, 'Invalid Aadhar number'),
         otherwise: () => yup.string().matches(/^([A-Z]){5}([0-9]){4}([A-Z]){1}$/, {
             message: 'Invalid PAN number',
